@@ -38,5 +38,6 @@ namespace Authentication.Models
         public string Validity { get; set; }
         [Column(TypeName = "decimal(38,4)")]
         public decimal totalCredit { get; set; }
+        public decimal InitialCredits { get; set; }
     }
 }

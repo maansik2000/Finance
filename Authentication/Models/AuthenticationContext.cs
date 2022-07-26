@@ -19,5 +19,9 @@ namespace Authentication.Models
         public DbSet<PaymentDetail> PaymentDetails { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<UserDetailsModel> UserDetails { get; set; }
+        public DbSet<ProductModel> Products { get; set; }
+        public DbSet<EMImodels> EMI { get; set; }
+        public DbSet<TransactionsModel> Transactions { get; set; }
+        public DbSet<OrdersModel> Orders { get; set; }
     }
 }

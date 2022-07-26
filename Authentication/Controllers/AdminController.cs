@@ -152,6 +152,7 @@ namespace Authentication.Controllers
                         var allData = new AdminAllUsersModel()
                         {
                             userid = id,
+                            bankId = bankdata.bankId,
                             username = user.UserName,
                             email = user.Email,
                             phoneNumber = userdata.phoneNumber,
@@ -173,7 +174,8 @@ namespace Authentication.Controllers
                             isVerified = userdata.isVerified,
                             createdAt = userdata.createdAt,
                             RemainingBalance = bankdata.RemainingBalance,
-                            role = userdata.role
+                            role = userdata.role,
+                            InitialCredits = bankdata.InitialCredits
                         };
 
                         
@@ -207,6 +209,44 @@ namespace Authentication.Controllers
                 email = user.Email,
                 username = user.UserName
             };
+        }
+
+        [HttpPut]
+        [Route("ActivateAccount/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<Object> ActivateAccount(string id, BankDetailsModel data)
+        {
+            try
+            {
+                if (id == null || id == "")
+                {
+                    return BadRequest(new { message = "Id is null" });
+                }
+                else
+                {
+                    var userData = await _context.UserDetails.Where(res => res.userId == id).FirstOrDefaultAsync();
+                    if(userData != null)
+                    {
+                        userData.isActivated = true;
+                        userData.isVerified = true;
+                        _context.Update(userData);
+                        await _context.SaveChangesAsync();
+                        _context.Entry(data).State = EntityState.Modified;
+                        await _context.SaveChangesAsync();
+                        return Ok(new { message = "User Account is Activated" });
+                    }
+                    else
+                    {
+                        return BadRequest(new { message = "Can't find User with the given id" });
+                    }
+         
+                }
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "Something went wrong" });
+            }
+            
         }
     }
 }

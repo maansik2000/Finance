@@ -70,7 +70,9 @@ namespace Authentication.Controllers
                                 UserAddress = data.UserAddress,
                                 phoneNumber = data.phoneNumber,
                                 role = "Customer",
-                                createdAt = localDate
+                                createdAt = localDate,
+                                joiningFeesAmount = 0.0m
+
                             };
 
                             var bankDetails = new BankDetailsModel()
@@ -87,6 +89,8 @@ namespace Authentication.Controllers
                                 RemainingBalance = 0.0m,
                                 amountSpent = 0.0m,
                                 totalCredit = 0.0m,
+                                InitialCredits = 0.0m
+
                             };
 
                             await _context.UserDetails.AddAsync(newUser);

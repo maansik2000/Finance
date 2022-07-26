@@ -8,6 +8,7 @@ namespace Authentication.Models
     public class AdminAllUsersModel
     {
         public string userid { get; set; }
+        public int bankId { get; set; }
         public string username { get; set; }
         public string email { get; set; }
         public string fullName { get; set; }
@@ -40,5 +41,6 @@ namespace Authentication.Models
         public DateTime createdAt { get; set; }
         public decimal totalCredit { get; set; }
         public string role { get; set; }
+        public decimal InitialCredits { get; set; }
     }
 }
