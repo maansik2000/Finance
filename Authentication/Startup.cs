@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Authentication.Services;
 
 namespace Authentication
 {
@@ -57,7 +58,9 @@ namespace Authentication
                 options.User.RequireUniqueEmail = true;
             });
             services.AddCors();
-
+            
+            services.AddScoped<IUserService, UserService > ();
+            services.AddScoped<IMailService, MailService>();
             //jwt authentication
 
             var key = Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret_Code"].ToString());

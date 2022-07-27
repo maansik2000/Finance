@@ -22,5 +22,6 @@ namespace Authentication.Models
         public bool isEmiCompleted { get; set; }
         public int emiPeriod { get; set; }
         public DateTime emiNextDate { get; set; }
+        public int PendingEmiInstallment { get; set; }
     }
 }
