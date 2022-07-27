@@ -55,7 +55,7 @@ namespace Authentication.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Customer")]
-        [Route("GetUserData")]
+        [Route("GetUserData/")]
         public async Task<Object> GetUserData()
         {
             try
@@ -65,18 +65,21 @@ namespace Authentication.Controllers
                 var orderHistory = new List<OrdersModel>();
                 var TransactionHistory = new List<TransactionsModel>();
                 var EmiData = new List<EMImodels>();
+                var ProductData = new List<ProductModel>();
 
                 string userId = User.Claims.First(c => c.Type == "UserId").Value;
                 var user = await _userManager.FindByIdAsync(userId);
 
                 bankData = await _context.BankDetails.Where(s => s.userId == userId).FirstOrDefaultAsync();
                 userdata = await _context.UserDetails.Where(s => s.userId == userId).FirstOrDefaultAsync();
-                orderHistory = await _context.Orders.OrderBy(item => item.userId == userId).ToListAsync();
-                TransactionHistory = await _context.Transactions.OrderBy(item => item.userId == userId).ToListAsync();
-                EmiData = await _context.EMI.OrderBy(item => item.userId == userId).ToListAsync();
+                orderHistory = await _context.Orders.Where(item => item.userId == userId).ToListAsync();
+                TransactionHistory = await _context.Transactions.Where(item => item.userId == userId).ToListAsync();
+                EmiData = await _context.EMI.Where(item => item.userId == userId).ToListAsync();
+                ProductData = await _context.Products.ToListAsync();
 
                 var data = from item in orderHistory
                            join item2 in EmiData on item.orderId equals item2.orderId
+                           join p2 in ProductData on item.productId equals p2.productId
                            select new
                            {
                                orderId = item.orderId,
@@ -93,7 +96,9 @@ namespace Authentication.Controllers
                                emiNextDate = item2.emiNextDate,
                                productId = item2.productId,
                                productName = item.ProductName,
-                               transactionId = item.transactionId
+                               transactionId = item.transactionId,
+                               PendingEmiInstallment = item2.PendingEmiInstallment,
+                               productImg = p2.Img,
                            };
 
                 var cardDetails = new
@@ -164,5 +169,7 @@ namespace Authentication.Controllers
                 return BadRequest(new { message = "Something went wrong" });
             }
         }
+
+        
     }
 }
