@@ -1,4 +1,5 @@
 ﻿using Authentication.Models;
+using Authentication.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -17,53 +18,36 @@ namespace Authentication.Controllers
     {
         private readonly AuthenticationContext _context;
         private UserManager<ApplicationUser> _userManager;
-        public AdminController(UserManager<ApplicationUser> userManager, AuthenticationContext context)
+        private readonly IAdminServices _adminService;
+        public AdminController(UserManager<ApplicationUser> userManager, AuthenticationContext context, IAdminServices adminServices)
         {
             _userManager = userManager;
             _context = context;
+            _adminService = adminServices;
         }
 
         [HttpPost]
         [Route("Signup")]
         public async Task<Object> AdminSignUp(AdminModel data)
         {
-            data.roles = "Admin";
-            var applicationUser = new ApplicationUser()
-            {
-                UserName = data.username,
-                Email = data.email,
-                FullName = data.fullName,
-
-            };
-
             try
             {
-                var userFind = await _context.ApplicationUsers.FirstOrDefaultAsync(a => a.Email == data.email || a.UserName == data.username);
+                var result = await _adminService.AdminSignUp(data);
 
-                if (userFind == null)
+                if (result.success)
                 {
-                    var result = await _userManager.CreateAsync(applicationUser, data.password);
-                    await _userManager.AddToRoleAsync(applicationUser, data.roles);
-
-                    if (result.Succeeded)
-                    {
-                        return Ok(result);
-                    }
-                    else
-                    {
-                        return BadRequest(new { message = "Unable to create user or user exist" });
-                    }
+                    return Ok(result.res);
                 }
                 else
                 {
-                    return BadRequest(new { message = "User already exist, please login" });
+                    return BadRequest(new { message = result.message });
                 }
-
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                
+                return BadRequest(new { message = ex });
+            
             }
         }
 
@@ -72,57 +56,21 @@ namespace Authentication.Controllers
         [Route("getAllUsers")]
         public async Task<ActionResult<IEnumerable<UserDetailsModel>>> GetAllUsers()
         {
-            var user = new List<ApplicationUser>();
-            var adminList = new List<ApplicationUser>();
-            
-            var userData = new List<UserDetailsModel>();
-           
-            user = await _context.ApplicationUsers.ToListAsync();
-            userData = await _context.UserDetails.ToListAsync();
-
-            var userList = from u in user
-                       join ud in userData on u.Id equals ud.userId
-                       select new
-                       {
-                           userid = u.Id,
-                           username = u.UserName,
-                           email = u.Email,
-                           phoneNumber = ud.phoneNumber,
-                           isActivated = ud.isActivated,
-                           fullName = u.FullName,
-                           isVerified = ud.isVerified,
-                           createdAt = ud.createdAt,
-                       };
-
-            int totalUser = user.Count();
-            int deactivatedAccount = 0;
-            
-            //for filtering admin and user 
-            foreach (var item in user)
+            try
             {
-                if(item.UserName == "admin")
+                var result = await _adminService.GetAllUsers();
+                if (result.success)
                 {
-                    adminList.Add(item);
+                    return Ok(result.res);
+                }
+                else
+                {
+                    return BadRequest(new { message = result.message });
                 }
             }
-
-            //for filtering deactivated accounts
-            foreach (var item in userData)
+            catch (Exception ex)
             {
-                if (item.isActivated == false)
-                {
-                    deactivatedAccount++;
-                }
-            }
-
-
-            if (user != null)
-            {
-                return Ok(new { adminList = adminList, userList = userList , totalUsers = totalUser, adminUser = adminList.Count(), userCount = userList.Count(), deactivatedAccount = deactivatedAccount });
-            }
-            else
-            {
-                return Ok(new { data = "unable to get the data" });
+                return BadRequest(new { message = ex });
             }
         }
 
@@ -133,58 +81,14 @@ namespace Authentication.Controllers
         {
             try
             {
-                if(id == null)
+                var result = await _adminService.GetUserDetails(id);
+                if (result.success)
                 {
-                    return BadRequest(new { message="Id is null" });
+                    return Ok(new { data = result.res });
                 }
                 else
                 {
-                    var userdata = new UserDetailsModel();
-                    var bankdata = new BankDetailsModel();
-                    var user = new ApplicationUser();
-
-                    userdata = await _context.UserDetails.Where(s => s.userId == id).FirstOrDefaultAsync();
-                    bankdata = await _context.BankDetails.Where(s => s.userId == id).FirstOrDefaultAsync();
-                    user = await _context.ApplicationUsers.Where(s => s.Id == id).FirstOrDefaultAsync();
-
-                    if (userdata != null && bankdata != null && user != null)
-                    {
-                        var allData = new AdminAllUsersModel()
-                        {
-                            userid = id,
-                            bankId = bankdata.bankId,
-                            username = user.UserName,
-                            email = user.Email,
-                            phoneNumber = userdata.phoneNumber,
-                            joiningFees = userdata.joiningFees,
-                            UserAddress = userdata.UserAddress,
-                            bankname = bankdata.bankname,
-                            branch = bankdata.branch,
-                            ifscCode = bankdata.ifscCode,
-                            isActivated = userdata.isActivated,
-                            accountNumber = bankdata.accountNumber,
-                            CardType = bankdata.CardType,
-                            dateOfBirth = userdata.dateOfBirth,
-                            fullName = user.FullName,
-                            totalCredit = bankdata.totalCredit,
-                            Validity = bankdata.Validity,
-                            cardStatus = bankdata.cardStatus,
-                            cardNumber = bankdata.cardNumber,
-                            amountSpent = bankdata.amountSpent,
-                            isVerified = userdata.isVerified,
-                            createdAt = userdata.createdAt,
-                            RemainingBalance = bankdata.RemainingBalance,
-                            role = userdata.role,
-                            InitialCredits = bankdata.InitialCredits
-                        };
-
-                        
-
-                        return Ok(new { data = allData });
-                    }
-                    else {
-                        return BadRequest(new { message = "unable to find the user" });
-                    }
+                    return BadRequest(new { message = result.message });
                 }
             }
             catch (Exception ex)
@@ -200,15 +104,25 @@ namespace Authentication.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<Object> GetAdminProfile()
         {
-            string userId = User.Claims.First(c => c.Type == "UserId").Value;
-            var user = await _userManager.FindByIdAsync(userId);
-
-            return new
+            try
             {
-                fullname = user.FullName,
-                email = user.Email,
-                username = user.UserName
-            };
+                string userId = User.Claims.First(c => c.Type == "UserId").Value;
+                var result = await _adminService.GetAdminProfile(userId);
+                if (result.success)
+                {
+                    return Ok(new { result.res });
+                }
+                else
+                {
+                    return BadRequest(new { message = result.message });
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(new { message = ex });
+            }
+            
         }
 
         [HttpPut]
@@ -218,33 +132,20 @@ namespace Authentication.Controllers
         {
             try
             {
-                if (id == null || id == "")
+                var result = await _adminService.ActivateAccount( id,  data);
+                if (result.success)
                 {
-                    return BadRequest(new { message = "Id is null" });
+                    return Ok(new { message= "Account is activated" });
                 }
                 else
                 {
-                    var userData = await _context.UserDetails.Where(res => res.userId == id).FirstOrDefaultAsync();
-                    if(userData != null)
-                    {
-                        userData.isActivated = true;
-                        userData.isVerified = true;
-                        _context.Update(userData);
-                        await _context.SaveChangesAsync();
-                        _context.Entry(data).State = EntityState.Modified;
-                        await _context.SaveChangesAsync();
-                        return Ok(new { message = "User Account is Activated" });
-                    }
-                    else
-                    {
-                        return BadRequest(new { message = "Can't find User with the given id" });
-                    }
-         
+                    return BadRequest(new { message = result.message });
                 }
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest(new { message = "Something went wrong" });
+                return BadRequest(new { message = ex });
             }
             
         }

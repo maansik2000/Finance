@@ -61,6 +61,8 @@ namespace Authentication
             
             services.AddScoped<IUserService, UserService > ();
             services.AddScoped<IMailService, MailService>();
+            services.AddScoped<IUserProfileService, UserProfileService>();
+            services.AddScoped<IAdminServices, AdminService>();
             //jwt authentication
 
             var key = Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret_Code"].ToString());
