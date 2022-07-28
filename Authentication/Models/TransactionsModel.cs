@@ -16,6 +16,5 @@ namespace Authentication.Models
         public DateTime TransactionDate { get; set; }
         public string ProductName { get; set; }
         public int productId { get; set; }
-
     }
 }
