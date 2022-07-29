@@ -15,7 +15,7 @@ namespace Authentication.Models
         public DateTime dateOfBirth { get; set; }
         public string phoneNumber { get; set; }
         public string UserAddress { get; set; }
-
+        public bool isActivateUser { get; set; }
         public string bankname { get; set; }
 
         public string branch { get; set; }

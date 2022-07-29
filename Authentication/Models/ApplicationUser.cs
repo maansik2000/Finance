@@ -11,6 +11,8 @@ namespace Authentication.Models
     {
         [Column(TypeName ="nvarchar(50)")]
         public string FullName { get; set; }
-     
+        [Column(TypeName = "bit")]
+        public bool isActivated { get; set; }
+
     }
 }

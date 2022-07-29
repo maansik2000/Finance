@@ -51,7 +51,8 @@ namespace Authentication.Services
                     fullName = user.FullName,
                     userId = user.Id,
                     joiningFees = userdata.joiningFees,
-                    isCardActivated = bankData.cardStatus
+                    isCardActivated = bankData.cardStatus,
+
                 };
 
                 return new ApiResponse

@@ -38,12 +38,16 @@ namespace Authentication
         {
             //inject settings
             services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
+
             configurationSwagger(services);
            
             services.AddDbContext<AuthenticationContext>(options => options.UseSqlServer(Configuration.GetConnectionString("MyConnection")));
+            
             services.AddControllers().AddNewtonsoftJson(options =>
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                 ); 
+            
+            //user identity authentication
             services.AddDefaultIdentity<ApplicationUser>()
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AuthenticationContext>();
@@ -55,18 +59,19 @@ namespace Authentication
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
                 options.Password.RequiredLength = 4;
-                options.User.RequireUniqueEmail = true;
+              
             });
+
             services.AddCors();
             
             services.AddScoped<IUserService, UserService > ();
             services.AddScoped<IMailService, MailService>();
             services.AddScoped<IUserProfileService, UserProfileService>();
             services.AddScoped<IAdminServices, AdminService>();
+
+
             //jwt authentication
-
             var key = Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret_Code"].ToString());
-
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

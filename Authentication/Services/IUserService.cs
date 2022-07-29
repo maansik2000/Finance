@@ -47,12 +47,16 @@ namespace Authentication.Services
 
         public async Task<ApiResponse> Login(LoginModel data)
         {
-            var user = await _userManager.FindByEmailAsync(data.email);
+            var user = await _context.ApplicationUsers.FirstOrDefaultAsync(a => a.Email == data.email  && a.isActivated);
+            //var user = await _userManager.FindByEmailAsync(data.email);
+           
             if (user != null && await _userManager.CheckPasswordAsync(user, data.password))
             {
                 //assign role
                 var roles = await _userManager.GetRolesAsync(user);
+
                 IdentityOptions _options = new IdentityOptions();
+
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new Claim[] {
@@ -65,9 +69,11 @@ namespace Authentication.Services
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+
+                //this is jwt token
                 var token = tokenHandler.WriteToken(securityToken);
 
-                var res = new { token = token, email = user.Email, username = user.UserName, fullName = user.FullName };
+                var res = new { token = token, email = user.Email, username = user.UserName, fullName = user.FullName, isActivated= user.isActivated };
 
                 return new ApiResponse
                 {
@@ -94,9 +100,10 @@ namespace Authentication.Services
                 UserName = data.username,
                 Email = data.email,
                 FullName = data.fullName,
+                isActivated = true
             };
 
-            var userFind = await _context.ApplicationUsers.FirstOrDefaultAsync(a => a.Email == data.email || a.UserName == data.username);
+            var userFind = await _context.ApplicationUsers.FirstOrDefaultAsync(a => (a.Email == data.email || a.UserName == data.username) && a.isActivated);
 
             if (userFind == null)
             {
@@ -105,7 +112,7 @@ namespace Authentication.Services
 
                 if (result.Succeeded)
                 {
-                    var userData = await _context.ApplicationUsers.FirstOrDefaultAsync(a => a.Email == data.email);
+                    var userData = await _context.ApplicationUsers.FirstOrDefaultAsync(a => a.Email == data.email && a.UserName == data.username && a.isActivated);
 
                     if (userData != null)
                     {
@@ -166,7 +173,7 @@ namespace Authentication.Services
                 {
                     return new ApiResponse
                     {
-                        message = "Unable to create User details exist, please contact admin",
+                        message = "Unable to create User or username exist",
                         success = false
                     }; 
                 }
@@ -175,7 +182,7 @@ namespace Authentication.Services
             {
                 return new ApiResponse
                 {
-                    message = "User already exist please login",
+                    message = "User already exist, please login",
                     success = false
                 }; 
             }
@@ -183,7 +190,9 @@ namespace Authentication.Services
 
         public async Task<ApiResponse> ForgetPassword(string email)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            //var user = await _userManager.FindByEmailAsync(email);
+            var user = await _context.ApplicationUsers.FirstOrDefaultAsync(a =>a.Email == email && a.isActivated);
+
             if (user == null)
             {
                 return new ApiResponse
@@ -205,13 +214,14 @@ namespace Authentication.Services
                     $"<p>To reset your password <a href='{url}'>Click Here</a></p>"
                     );
 
-                return new ApiResponse { success= true, message = "Reset password url has been sent to the email successfully" };
+                return new ApiResponse { success= true, res=validToken, message = "Reset password url has been sent to the email successfully" };
             }
         }
 
         public async Task<ApiResponse> ResetPassword(ResetPasswordModel data)
         {
-            var user = await _userManager.FindByEmailAsync(data.email);
+            var user = await _context.ApplicationUsers.FirstOrDefaultAsync(a =>a.Email == data.email && a.isActivated);
+
             if (user == null)
             {
                 return new ApiResponse

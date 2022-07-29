@@ -30,13 +30,6 @@ namespace Authentication.Services
         {
             try
             {
-                StringBuilder sb = new StringBuilder();
-                sb.Append("&lt;html><head><title>CONFIRMATION EMAIL:</title></head><body>");
-
-
-                sb.Append("&lt;p>HERE IS THE LINK:</p><br/>");
-                sb.Append("&lt;p>" + "&lt;a href=" + "http://www.google.com" + ">" + "Click" + "</a></p><br/>");
-
                 var apiPassword = _configuration["GmailAppPassword"];
                 string fromMail = "mansisarkar4@gmail.com";
                 MailMessage message = new MailMessage();
