@@ -28,7 +28,7 @@ namespace Authentication.Controllers
         [HttpGet]
         [Authorize(Roles = "Customer")]
         [Route("GetAllProducts")]
-        public async Task<ActionResult<IEnumerable<ProductModel>>> GetPaymentDetails()
+        public async Task<ActionResult<IEnumerable<ProductModel>>> GetProducts()
         {
             return await _context.Products.ToListAsync();
         }

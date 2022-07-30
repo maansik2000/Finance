@@ -15,6 +15,7 @@ namespace Authentication.Services
         Task<ApiResponse> GetUserDetails(string id);
         Task<ApiResponse> GetAdminProfile(string userId);
         Task<ApiResponse> ActivateAccount(string id, BankDetailsModel data);
+        Task<ApiResponse> DeleteUser(string id);
     }
 
     public class AdminService : IAdminServices
@@ -74,7 +75,8 @@ namespace Authentication.Services
                 UserName = data.username,
                 Email = data.email,
                 FullName = data.fullName,
-
+                Role = "Admin",
+                isActivated = true
             };
 
             var userFind = await _context.ApplicationUsers.FirstOrDefaultAsync(a => a.Email == data.email || a.UserName == data.username);
@@ -110,6 +112,32 @@ namespace Authentication.Services
                     success = false
                 };
            
+            }
+        }
+
+        public async Task<ApiResponse> DeleteUser(string id)
+        {
+            var userFind = await _context.ApplicationUsers.FirstOrDefaultAsync(a => a.Id == id && a.isActivated);
+
+            if(userFind != null)
+            {
+                userFind.isActivated = false;
+                _context.Update(userFind);
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse
+                {
+                    message = "User is Deleted Successfully",
+                    success = true
+                };
+            }
+            else
+            {
+                return new ApiResponse
+                {
+                    message = "Can't delete as User doesn't exist",
+                    success = false
+                };
             }
         }
 
@@ -164,15 +192,16 @@ namespace Authentication.Services
                                fullName = u.FullName,
                                isVerified = ud.isVerified,
                                createdAt = ud.createdAt,
+                               isActivatedUser = u.isActivated
                            };
 
             int totalUser = user.Count();
             int deactivatedAccount = 0;
 
-            //for filtering admin and user 
+            //for filtering admin and user , need to change this
             foreach (var item in user)
             {
-                if (item.UserName == "admin")
+                if (item.Role == "Admin")
                 {
                     adminList.Add(item);
                 }
@@ -217,7 +246,7 @@ namespace Authentication.Services
 
         public async Task<ApiResponse> GetUserDetails(string id)
         {
-            if (id == null)
+            if (string.IsNullOrEmpty(id))
             {
                 return new ApiResponse
                 {
@@ -262,8 +291,9 @@ namespace Authentication.Services
                         isVerified = userdata.isVerified,
                         createdAt = userdata.createdAt,
                         RemainingBalance = bankdata.RemainingBalance,
-                        role = userdata.role,
-                        InitialCredits = bankdata.InitialCredits
+                        role = user.Role,
+                        InitialCredits = bankdata.InitialCredits,
+                        isActivateUser =user.isActivated
                     };
 
                     return new ApiResponse
@@ -282,5 +312,6 @@ namespace Authentication.Services
                 }
             }
         }
+
     }
 }

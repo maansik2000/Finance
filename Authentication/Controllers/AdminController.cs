@@ -149,5 +149,29 @@ namespace Authentication.Controllers
             }
             
         }
+    
+        [HttpPost]
+        [Route("DeleteUser/{id}")]
+        [Authorize(Roles ="Admin")]
+        public async Task<Object> DeleteUser(string id)
+        {
+            try
+            {
+                var result = await _adminService.DeleteUser(id);
+                if (result.success)
+                {
+                    return Ok(new { message = "Account is Deleted Successfully" });
+                }
+                else
+                {
+                    return BadRequest(new { message = result.message });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex });
+            }
+        }
     }
 }
