@@ -23,7 +23,6 @@ namespace Authentication.Models
     
         public bool joiningFees { get; set; }
         public DateTime createdAt { get; set; }
-        public string role { get; set; }
         public decimal joiningFeesAmount { get; set; }
 
     }

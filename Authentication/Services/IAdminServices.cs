@@ -75,7 +75,8 @@ namespace Authentication.Services
                 UserName = data.username,
                 Email = data.email,
                 FullName = data.fullName,
-
+                Role = "Admin",
+                isActivated = true
             };
 
             var userFind = await _context.ApplicationUsers.FirstOrDefaultAsync(a => a.Email == data.email || a.UserName == data.username);
@@ -200,7 +201,7 @@ namespace Authentication.Services
             //for filtering admin and user , need to change this
             foreach (var item in user)
             {
-                if (item.UserName == "admin")
+                if (item.Role == "Admin")
                 {
                     adminList.Add(item);
                 }
@@ -290,7 +291,7 @@ namespace Authentication.Services
                         isVerified = userdata.isVerified,
                         createdAt = userdata.createdAt,
                         RemainingBalance = bankdata.RemainingBalance,
-                        role = userdata.role,
+                        role = user.Role,
                         InitialCredits = bankdata.InitialCredits,
                         isActivateUser =user.isActivated
                     };

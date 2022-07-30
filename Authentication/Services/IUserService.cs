@@ -100,7 +100,8 @@ namespace Authentication.Services
                 UserName = data.username,
                 Email = data.email,
                 FullName = data.fullName,
-                isActivated = true
+                isActivated = true,
+                Role = "Customer"
             };
 
             var userFind = await _context.ApplicationUsers.FirstOrDefaultAsync(a => (a.Email == data.email || a.UserName == data.username) && a.isActivated);
@@ -117,6 +118,7 @@ namespace Authentication.Services
                     if (userData != null)
                     {
                         DateTime localDate = DateTime.Now;
+
                         var newUser = new UserDetailsModel()
                         {
                             userId = userData.Id,
@@ -126,7 +128,6 @@ namespace Authentication.Services
                             dateOfBirth = data.dateOfBirth,
                             UserAddress = data.UserAddress,
                             phoneNumber = data.phoneNumber,
-                            role = "Customer",
                             createdAt = localDate,
                             joiningFeesAmount = 0.0m
 
@@ -155,7 +156,7 @@ namespace Authentication.Services
                         await _context.SaveChangesAsync();
                         return new ApiResponse
                         {
-                            message = "Successfull created the user",
+                            message = "Successfully created the user",
                             res = result,
                             success = true
                         };

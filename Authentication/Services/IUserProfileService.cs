@@ -52,7 +52,7 @@ namespace Authentication.Services
                     userId = user.Id,
                     joiningFees = userdata.joiningFees,
                     isCardActivated = bankData.cardStatus,
-
+                    cardType = bankData.CardType
                 };
 
                 return new ApiResponse
@@ -359,7 +359,7 @@ namespace Authentication.Services
 
                         if (!emiData.isEmiCompleted && emiData.emiNextDate.ToString("yyyy-MM-dd") == DateTime.Now.ToString("yyyy-MM-dd"))
                         {
-                            if (emiData.PendingEmiInstallment != 1)
+                            if (emiData.PendingEmiInstallment >= 1)
                             {
                                 emiData.amountPaid = emiData.amountPaid + emiData.emiAmount;
                                 emiData.remainingBalance = emiData.remainingBalance - emiData.emiAmount;

@@ -13,6 +13,6 @@ namespace Authentication.Models
         public string FullName { get; set; }
         [Column(TypeName = "bit")]
         public bool isActivated { get; set; }
-
+        public string Role { get; set; }
     }
 }
