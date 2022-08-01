@@ -47,8 +47,9 @@ namespace Authentication.Services
             }
             else
             {
+                var user = await _context.ApplicationUsers.Where(item => item.isActivated && item.Id == id).FirstOrDefaultAsync();
                 var userData = await _context.UserDetails.Where(res => res.userId == id).FirstOrDefaultAsync(); //wait until we get the return value
-                if (userData != null) //if the user we find is null then, we send the api response as false and error message otherwise we will activate the data of the user in the database
+                if (userData != null && user != null) //if the user we find is null then, we send the api response as false and error message otherwise we will activate the data of the user in the database
                 {
                     userData.isActivated = true; //updating only isActivated and isVerified in the database
                     userData.isVerified = true;

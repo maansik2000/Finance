@@ -432,7 +432,7 @@ namespace Authentication.Services
                             //if the emi is already completed then sending emi response error message
                             return new ApiResponse
                             {
-                                message = "EMI Already Completed",
+                                message = "EMI Already Completed or emi date is not today",
                                 success = false
                             };
                         }
